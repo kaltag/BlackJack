@@ -1,5 +1,6 @@
 class User
   attr_reader :money, :name
+
   def initialize(name)
     @money = 100
     @name = name
@@ -12,5 +13,4 @@ class User
   def remove_money
     @money -= 10
   end
-
 end
