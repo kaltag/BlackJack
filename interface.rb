@@ -3,16 +3,25 @@ class Interface
     puts "What's your name?"
     # TODO: do validation
     name = gets.chomp
-    User.new(name)
-    User.new('Diller')
+    @user = User.new(name)
+    @diller = User.new('Diller')
+    # TODO: CHECK NEW CARD
+    @cards = Card.new
     start_game
   end
 
   def start_game
-    # add 2 cards to user
-    # add 2 cards to diller
+    @user.add_hand(@cards)
+    @diller.add_hand(@cards)
+    puts @user.hand
     # show user points
-    # user and diller remove_money
+
+    # TODO: DELETE
+    puts '----------------'
+    puts @diller.hand
+
+    @user.remove_money
+    @diller.remove_money
     user_turn
   end
 
