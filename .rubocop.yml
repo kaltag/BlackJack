@@ -12,3 +12,6 @@ Style/ClassVars:
 
 Metrics/AbcSize:
   CountRepeatedAttributes: false
+
+Metrics/MethodLength:
+  Max: 20

@@ -7,13 +7,23 @@ class Score
 
   def point(hand)
     hand.each do |card|
-      card.gsub!(/[+<)^>]/, '')
-      if card.to_i != 0
-        @score += card.to_i
-      elsif %w[J Q K].include?(card)
+      score_card = card.gsub(/[+<)^>]/, '')
+      if score_card.to_i != 0
+        @score += score_card.to_i
+      elsif %w[J Q K].include?(score_card)
         @score += 10
-      elsif card == 'A'
+      end
+    end
+    ace_point(hand)
+  end
+
+  def ace_point(hand)
+    hand.each do |card|
+      score_card = card.gsub(/[+<)^>]/, '')
+      if score_card == 'A' && @score < 11
         @score += 11
+      elsif score_card == 'A' && @score >= 11
+        @score += 1
       end
     end
   end

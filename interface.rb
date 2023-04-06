@@ -1,29 +1,28 @@
 class Interface
   def start
     puts "What's your name?"
-    # TODO: do validation
     name = gets.chomp
     @user = User.new(name)
     @diller = User.new('Diller')
-    # TODO: CHECK NEW CARD
-    @cards = Card.new
-    @user_score = Score.new
-    @diller_score = Score.new
     start_game
   end
 
+  def init
+    @cards = Card.new
+    @user_score = Score.new
+    @diller_score = Score.new
+    @user.hand = []
+    @diller.hand = []
+  end
+
   def start_game
+    init
     2.times { @user.add_hand(@cards) }
     2.times { @diller.add_hand(@cards) }
-    puts @user.hand
-    puts 'You points: '
+    puts "Your money: #{@user.money}"
+    puts "You cards: #{@user.hand.join(' ')}"
     @user_score.point(@user.hand)
-    puts @user.score = @user_score.score
-
-    # TODO: DELETE?
-
-    @diller_score.point(@diller.hand)
-    @diller.score = @diller_score.score
+    puts "You points: #{@user_score.score}"
 
     @user.remove_money
     @diller.remove_money
@@ -34,19 +33,12 @@ class Interface
   def user_turn
     puts '1 - Add card'
     puts '2 - Open hands'
-    # puts '3 - skip/end turn'
 
     case gets.chomp.to_i
     when 1
       @user.add_hand(@cards)
-      puts @user.hand
-      puts 'You points: '
       @user_score.score = 0
-
       @user_score.point(@user.hand)
-      puts @user.score = @user_score.score
-      puts @user_score.score
-
       diller_turn
     when 2
       diller_turn
@@ -54,25 +46,60 @@ class Interface
   end
 
   def diller_turn
-    unless @diller.score >= 17
+    @diller_score.point(@diller.hand)
+    if @diller_score.score <= 17 && @user_score.score < 21
       @diller_score.score = 0
       @diller.add_hand(@cards)
       @diller_score.point(@diller.hand)
-      # @diller.score = @diller_score.score
     end
+    show_score
+  end
+
+  def show_score
+    puts "You cards: #{@user.hand.join(' ')}"
+    puts "You points: #{@user_score.score}"
+    puts '--------------------------'
+    puts "Diller cards: #{@diller.hand.join(' ')}"
+    puts "Diller points: #{@diller_score.score}"
+
     end_game
+    start_new_game?
   end
 
   def end_game
-    puts @user.hand
-    puts @user_score.score
-    puts '----------------'
-    puts @diller.hand
-    puts @diller_score.score
-    if @user_score.score > @diller_score.score
+    if (@user_score.score < 22 && @user_score.score > @diller_score.score) || @diller_score.score > 21
       puts 'You win'
+      2.times { @user.add_money }
+    elsif @user_score.score == @diller_score.score
+      puts 'Less'
+      @user.add_money
+      @diller.add_money
     else
       puts 'You lose'
+      2.times { @diller.add_money }
+    end
+  end
+
+  def start_new_game?
+    puts '1 - Start new game'
+    puts '2 - Exit'
+    case gets.to_i
+    when 1
+      new_game
+    when 2
+      exit
+    end
+  end
+
+  def new_game
+    if @user.money || @diller.money.positive?
+      puts '========================='
+      puts 'Start new game!'
+      system 'clear'
+      start_game
+    else
+      puts 'Game over'
+      exit
     end
   end
 end
