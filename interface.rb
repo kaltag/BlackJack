@@ -1,4 +1,6 @@
 class Interface
+  USER_TURN_METHOD = { 1 => :add_card, 2 => :open_hands, 3 => :skip_turn }.freeze
+
   def start
     puts "What's your name?"
     name = gets.chomp
@@ -26,22 +28,45 @@ class Interface
 
     @user.remove_money
     @diller.remove_money
-
+    @user_can_play = 0
+    @skipe_hide = 0
     user_turn
   end
 
   def user_turn
+    @diller.hand.count == 3 ? (puts 'Diller *** cards') : (puts 'Diller ** cards')
     puts '1 - Add card'
     puts '2 - Open hands'
+    puts '3 - Skip' if @skipe_hide.zero?
 
-    case gets.chomp.to_i
-    when 1
-      @user.add_hand(@cards)
-      @user_score.score = 0
-      @user_score.point(@user.hand)
-      diller_turn
-    when 2
-      diller_turn
+    key = gets.to_i
+    send(USER_TURN_METHOD[key]) if USER_TURN_METHOD[key]
+  end
+
+  def add_card
+    @user.add_hand(@cards)
+    @user_score.score = 0
+    @user_score.point(@user.hand)
+    @user_can_play += 1
+    @user_can_play < 2 ? diller_turn : show_score
+  end
+
+  def open_hands
+    @user_can_play += 1
+    @user_can_play < 2 ? diller_turn : show_score
+  end
+
+  def skip_turn
+    @skipe_hide = 1
+    @user_can_play < 1 ? diller_turn : show_score
+  end
+
+  def user_can_play?
+    if @user_can_play == 1
+      show_score
+    else
+      @user_can_play += 1
+      user_turn
     end
   end
 
@@ -52,7 +77,8 @@ class Interface
       @diller.add_hand(@cards)
       @diller_score.point(@diller.hand)
     end
-    show_score
+
+    user_can_play?
   end
 
   def show_score
@@ -67,13 +93,15 @@ class Interface
   end
 
   def end_game
-    if (@user_score.score < 22 && @user_score.score > @diller_score.score) || @diller_score.score > 21
-      puts 'You win'
-      2.times { @user.add_money }
+    if @diller_score.score > 21 && @user_score.score > 21
+      puts 'Both lose'
     elsif @user_score.score == @diller_score.score
       puts 'Less'
       @user.add_money
       @diller.add_money
+    elsif (@user_score.score < 22 && @user_score.score > @diller_score.score) || @diller_score.score > 21
+      puts 'You win'
+      2.times { @user.add_money }
     else
       puts 'You lose'
       2.times { @diller.add_money }
